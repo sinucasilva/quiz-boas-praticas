@@ -180,13 +180,87 @@
 
     <script>
         const quizData = [
-            { phase: 1, question: "Um cliente solicita formalmente o cancelamento do contrato. Qual é a 'Fonte da Verdade' para registrar e conduzir este processo?", answers: [{ text: "Slack", correct: false }, { text: "E-mail pessoal", correct: false }, { text: "Zendesk", correct: true }, { text: "Benner", correct: false }], explanation: "O Zendesk é sempre nossa 'Fonte da Verdade' para qualquer solicitação formal, garantindo um histórico auditável.", badge: "Guardião da Verdade" },
-            { phase: 2, question: "Para garantir que um novo ticket seja atendido com o SLA mais rápido, você deve criá-lo com o status...", answers: [{ text: "Aberto", correct: false }, { text: "Pendente", correct: false }, { text: "Em Espera", correct: false }, { text: "Novo", correct: true }], explanation: "Tickets com status 'Novo' entram na fila de triagem inicial, que possui o SLA de atendimento mais curto. Este é um ponto CRÍTICO!", badge: "Guardião do SLA" },
-            { phase: 2, question: "Ao criar um ticket manualmente, para quem você deve atribuir a responsabilidade inicial?", answers: [{ text: "Para um analista específico que você conhece.", correct: false }, { text: "Para o GRUPO correto (Ex: Financeiro / Contratos).", correct: true }, { text: "Para você mesmo.", correct: false }, { text: "Deixar sem atribuição.", correct: false }], explanation: "Atribuir ao GRUPO garante que o ticket entre na fila correta e seja pego pelo próximo analista disponível, agilizando o atendimento.", badge: "Mestre do Ticket" },
-            { phase: 3, question: "Você precisa de um alinhamento rápido com o time jurídico sobre o ticket #12345. Qual a forma CORRETA de agir no Slack?", answers: [{ text: "Mandar uma mensagem no canal principal pedindo ajuda.", correct: false }, { text: "Criar uma thread com o título 'Dúvida Jurídica - Ticket #12345' e marcar os responsáveis.", correct: true }, { text: "Abrir uma thread com o título 'AJUDA URGENTE JURÍDICO!!!'.", correct: false }, { text: "Mandar mensagem privada para um advogado.", correct: false }], explanation: "Usar threads com títulos claros (incluindo o nº do ticket) mantém a organização e o contexto, facilitando a colaboração.", badge: "Rei da Thread" },
-            { phase: 3, question: "É correto aprovar a prorrogação de uma fatura de alto valor através de uma mensagem no Slack?", answers: [{ text: "Sim, se a diretoria estiver no canal.", correct: false }, { text: "Não, o Slack é para alinhamento. A aprovação formal deve ser registrada no Zendesk.", correct: true }], explanation: "O Slack apoia, mas não substitui. Decisões e aprovações formais devem SEMPRE ser documentadas no Zendesk para fins de auditoria.", badge: "Ninja da Comunicação" },
-            { phase: 4, question: "Cenário: Um pedido de cancelamento chega via ticket. Qual é a ação que envolve o Slack neste processo?", answers: [{ text: "Comunicar a decisão final ao cliente pelo Slack.", correct: false }, { text: "Notificar o CS da loja no canal #wake-cscomm-churn para iniciar a retenção.", correct: true }, { text: "Pedir aprovação do cancelamento no Slack.", correct: false }, { text: "Não há interação com o Slack neste processo.", correct: false }], explanation: "O processo de cancelamento tem um gatilho específico no Slack para dar ciência ao CS da loja e iniciar a estratégia de retenção rapidamente.", badge: "Estrategista de Retenção" },
-            { phase: 4, question: "Cenário: Um cliente envia uma notificação extrajudicial para o e-mail do financeiro. O que você faz?", answers: [{ text: "Responde diretamente ao cliente para agilizar.", correct: false }, { text: "Ignora, pois veio pelo canal errado.", correct: false }, { text: "Orienta o cliente a enviar para o canal correto (ouvidoria@wake.tech) e encaminha o ticket para a fila da Ouvidoria.", correct: true }], explanation: "Centralizar as solicitações nos canais corretos é fundamental. O time de Ouvidoria é o ponto de entrada para notificações e acionará o Jurídico corretamente.", badge: "Defensor dos Processos" }
+            {
+                phase: 1,
+                question: "Qual o canal que o cliente inadimplente deve encaminhar o comprovante de pagamento para reativar a loja?",
+                answers: [
+                    { text: "contratos@wake.tech", correct: false },
+                    { text: "suporte@wake.tech", correct: false },
+                    { text: "financeiro.commerce@wake.tech", correct: true },
+                    { text: "Abrindo um ticket direto no Zendesk", correct: false }
+                ],
+                explanation: "O e-mail financeiro.commerce@wake.tech é o canal oficial para todas as solicitações financeiras, incluindo o envio de comprovantes, garantindo que o time correto receba e processe a reativação rapidamente.",
+                badge: "Mestre dos Canais"
+            },
+            {
+                phase: 2,
+                question: "Ao abrir um ticket manualmente no Zendesk, qual status você deve selecionar para que ele entre na fila de triagem com o SLA mais rápido?",
+                answers: [
+                    { text: "Aberto", correct: false },
+                    { text: "Pendente", correct: false },
+                    { text: "Em Espera", correct: false },
+                    { text: "Novo", correct: true }
+                ],
+                explanation: "Tickets com status 'Novo' entram na fila de triagem inicial, que possui o SLA de atendimento mais curto. Qualquer outro status pode fazer com que o ticket não seja visto a tempo pela equipe correta.",
+                badge: "Guardião do SLA"
+            },
+            {
+                phase: 2,
+                question: "Ao criar um ticket manualmente, para quem você deve atribuir a responsabilidade inicial?",
+                answers: [
+                    { text: "Para um analista específico que você conhece.", correct: false },
+                    { text: "Para o GRUPO correto (Ex: Financeiro / Contratos).", correct: true },
+                    { text: "Para você mesmo.", correct: false },
+                    { text: "Deixar sem atribuição.", correct: false }
+                ],
+                explanation: "Atribuir ao GRUPO garante que o ticket entre na fila correta e seja pego pelo próximo analista disponível, agilizando o atendimento.",
+                badge: "Mestre do Ticket"
+            },
+            {
+                phase: 3,
+                question: "Você precisa de um alinhamento rápido com o time jurídico sobre o ticket #12345. Qual a forma CORRETA de agir no Slack?",
+                answers: [
+                    { text: "Mandar uma mensagem no canal principal pedindo ajuda.", correct: false },
+                    { text: "Criar uma thread com o título 'Dúvida Jurídica - Ticket #12345' e marcar os responsáveis.", correct: true },
+                    { text: "Abrir uma thread com o título 'AJUDA URGENTE JURÍDICO!!!'.", correct: false },
+                    { text: "Mandar mensagem privada para um advogado.", correct: false }
+                ],
+                explanation: "Usar threads com títulos claros (incluindo o nº do ticket) mantém a organização e o contexto, facilitando a colaboração.",
+                badge: "Rei da Thread"
+            },
+            {
+                phase: 3,
+                question: "É correto aprovar a prorrogação de uma fatura de alto valor através de uma mensagem no Slack?",
+                answers: [
+                    { text: "Sim, se a diretoria estiver no canal.", correct: false },
+                    { text: "Não, o Slack é para alinhamento. A aprovação formal deve ser registrada no Zendesk.", correct: true }
+                ],
+                explanation: "O Slack apoia, mas não substitui. Decisões e aprovações formais devem SEMPRE ser documentadas no Zendesk para fins de auditoria.",
+                badge: "Ninja da Comunicação"
+            },
+            {
+                phase: 4,
+                question: "Cenário: Um pedido de cancelamento chega via ticket. Qual é a ação que envolve o Slack neste processo?",
+                answers: [
+                    { text: "Comunicar a decisão final ao cliente pelo Slack.", correct: false },
+                    { text: "Notificar o CS da loja no canal #wake-cscomm-churn para iniciar a retenção.", correct: true },
+                    { text: "Pedir aprovação do cancelamento no Slack.", correct: false },
+                    { text: "Não há interação com o Slack neste processo.", correct: false }
+                ],
+                explanation: "O processo de cancelamento tem um gatilho específico no Slack para dar ciência ao CS da loja e iniciar a estratégia de retenção rapidamente.",
+                badge: "Estrategista de Retenção"
+            },
+            {
+                phase: 4,
+                question: "Cenário: Um cliente envia uma notificação extrajudicial para o e-mail do financeiro. O que você faz?",
+                answers: [
+                    { text: "Responde diretamente ao cliente para agilizar.", correct: false },
+                    { text: "Ignora, pois veio pelo canal errado.", correct: false },
+                    { text: "Orienta o cliente a enviar para o canal correto (ouvidoria@wake.tech) e encaminha o ticket para a fila da Ouvidoria.", correct: true }
+                ],
+                explanation: "Centralizar as solicitações nos canais corretos é fundamental. O time de Ouvidoria é o ponto de entrada para notificações e acionará o Jurídico corretamente.",
+                badge: "Defensor dos Processos"
+            }
         ];
 
         const nameInput = document.getElementById('name-input');
