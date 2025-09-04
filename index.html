@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual e Quiz de Boas Práticas Wake</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap');
+        :root {
+            --wake-purple: #9400D3; --wake-cyan: #00D1FF; --wake-dark: #121212;
+            --wake-light: #FFFFFF; --wake-gray: #f4f4f4; --success-green: #28a745;
+            --danger-red: #dc3545; --sidebar-width: 300px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif; margin: 0; padding: 0;
+            background-color: var(--wake-light); color: #333; transition: background-color 0.5s;
+        }
+        body.quiz-active {
+            background-color: var(--wake-dark);
+            background-image: radial-gradient(circle at top right, var(--wake-purple) -40%, transparent 40%),
+                              radial-gradient(circle at bottom left, var(--wake-cyan) -40%, transparent 40%);
+        }
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* --- Estilos do Manual --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh;
+            background-color: var(--wake-dark); color: var(--wake-light);
+            padding: 40px; box-sizing: border-box; overflow-y: auto; z-index: 10;
+        }
+        .sidebar .logo { font-size: 40px; font-weight: 900; margin-bottom: 40px; }
+        .sidebar .logo span { color: var(--wake-purple); }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar nav h4 { color: var(--wake-cyan); margin-top: 30px; margin-bottom: 10px; text-transform: uppercase; }
+        .sidebar nav a {
+            display: block; color: var(--wake-light); padding: 10px 15px; border-radius: 5px;
+            transition: background-color 0.2s; font-size: 16px; text-decoration: none;
+        }
+        .sidebar nav a:hover { background-color: var(--wake-purple); }
+        .main-content { margin-left: var(--sidebar-width); padding: 60px 80px; }
+        .main-content section { padding-top: 80px; margin-top: -60px; margin-bottom: 80px; }
+        .main-content h2 { font-size: 48px; font-weight: 700; color: var(--wake-purple); border-bottom: 4px solid var(--wake-purple); padding-bottom: 15px; margin-bottom: 30px; text-transform: uppercase; }
+        .main-content h3 { font-size: 32px; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; }
+        .main-content p, .main-content li { font-size: 18px; line-height: 1.7; }
+        .main-content b { color: var(--wake-purple); }
+        .header-banner { background-color: var(--wake-dark); color: var(--wake-light); padding: 120px 80px; margin: -60px -80px 80px -80px; }
+        .header-banner h1 { font-size: 80px; font-weight: 900; color: var(--wake-light); text-transform: uppercase; }
+        .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px; }
+        .card { background-color: var(--wake-gray); padding: 30px; border-radius: 8px; }
+        .card ol { padding-left: 20px; }
+        .split-view { display: flex; gap: 40px; margin-top: 30px; }
+        .split-view > div { flex: 1; }
+        .checklist li { list-style: '✓ '; padding-left: 15px; }
+        .status-timeline { display: flex; justify-content: space-between; gap: 20px; margin-top: 40px; }
+        .status-item { text-align: center; }
+        .status-icon { width: 80px; height: 80px; background: #ccc; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; margin: 0 auto 15px; }
+        .status-item.novo .status-icon { background: var(--wake-purple); }
+        #start-quiz-section {
+            background: var(--wake-dark); color: var(--wake-light); text-align: center;
+            padding: 80px; border-radius: 20px;
+        }
+
+        /* --- Estilos do Quiz --- */
+        #quiz-view {
+            display: none; justify-content: center; align-items: center;
+            width: 100vw; height: 100vh;
+        }
+        #quiz-view.active { display: flex; }
+        .quiz-container {
+            width: 900px; max-width: 90%; background-color: rgba(18, 18, 18, 0.9);
+            border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--wake-light);
+        }
+        .quiz-container h1, .quiz-container h2, .quiz-container h3 { text-transform: uppercase; text-align: center; }
+        .quiz-container h1 { font-size: 48px; font-weight: 900; }
+        .quiz-container h2 { font-size: 32px; font-weight: 700; color: var(--wake-cyan); margin-bottom: 20px;}
+        .quiz-container p { font-size: 18px; text-align: center; line-height: 1.6; }
+        .quiz-container .screen { display: none; }
+        .quiz-container .screen.active { display: block; }
+        .btn {
+            display: block; width: 100%; padding: 15px 20px; font-size: 18px;
+            font-weight: 700; text-transform: uppercase; color: var(--wake-light);
+            background-color: var(--wake-purple); border: none; border-radius: 10px;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-top: 20px; text-decoration: none; text-align: center;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(148, 0, 211, 0.5); }
+        .btn-secondary { background-color: #333; }
+        .btn-secondary:hover { box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2); }
+        #progress-bar-full { width: 100%; height: 10px; background-color: #333; border-radius: 5px; margin-bottom: 10px; }
+        #progress-bar-current { height: 100%; width: 0%; background-color: var(--wake-cyan); border-radius: 5px; transition: width 0.3s; }
+        #question-counter { text-align: right; font-size: 16px; margin-bottom: 20px; }
+        #question-text { font-size: 24px; text-align: center; margin-bottom: 30px; }
+        .answer-options { list-style: none; padding: 0; }
+        .answer-options li {
+            background-color: #222; padding: 15px; border-radius: 8px; margin-bottom: 10px;
+            cursor: pointer; border: 2px solid #333; transition: border-color 0.2s;
+        }
+        .answer-options li:hover { border-color: var(--wake-purple); }
+        .answer-options li.correct { background-color: var(--success-green); border-color: var(--success-green); }
+        .answer-options li.incorrect { background-color: var(--danger-red); border-color: var(--danger-red); }
+        .answer-options li.disabled { pointer-events: none; }
+        #feedback { display: none; margin-top: 20px; background: #333; padding: 15px; border-radius: 8px; }
+        #feedback h3 { font-size: 20px; color: var(--wake-cyan); }
+        #feedback p { font-size: 16px; }
+        .badges-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+        .badge { background-color: var(--wake-purple); padding: 8px 15px; border-radius: 20px; font-size: 14px; font-weight: 700; }
+        
+        @media (max-width: 1024px) {
+            .sidebar { position: static; width: 100%; height: auto; }
+            .main-content { margin-left: 0; padding: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- VISÃO DO MANUAL -->
+    <div id="manual-view" class="view active">
+        <aside class="sidebar">
+            <div class="logo">wa<span>k</span>e</div>
+            <nav>
+                <h4>Princípios</h4>
+                <ul><li><a href="#filosofia">Nossa Filosofia</a></li></ul>
+                <h4>Guia do Zendesk</h4>
+                <ul>
+                    <li><a href="#o-que-solicitar">O que Solicitar?</a></li>
+                    <li><a href="#canais-oficiais">Canais Oficiais</a></li>
+                    <li><a href="#ticket-manual">Abrindo um Ticket Manualmente</a></li>
+                    <li><a href="#grupos-filas">Guia de Grupos e Filas</a></li>
+                    <li><a href="#status-tickets">Ciclo de Vida do Ticket</a></li>
+                </ul>
+                <h4>Guia do Slack</h4>
+                <ul>
+                    <li><a href="#papel-slack">O Papel do Slack</a></li>
+                    <li><a href="#regra-threads">A Regra de Ouro: Threads</a></li>
+                </ul>
+                <h4>Processos-Chave</h4>
+                <ul>
+                    <li><a href="#processo-prorrogacao">Prorrogação de Faturas</a></li>
+                    <li><a href="#processo-cancelamento">Cancelamento</a></li>
+                    <li><a href="#processo-notificacao">Notificação Extrajudicial</a></li>
+                </ul>
+                <h4>Teste seus Conhecimentos</h4>
+                <ul><li><a href="#start-quiz-section">Iniciar Quiz</a></li></ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header-banner">
+                <h1>Boas Práticas: Zendesk & Slack</h1>
+                <p style="font-size: 24px;">Manual de Treinamento Interno</p>
+            </header>
+
+            <section id="filosofia">
+                <h2>Nossa Filosofia de Comunicação</h2>
+                <h3>Zendesk é a nossa “Fonte da Verdade”</h3>
+                <p>É o sistema de registro oficial para todas as solicitações, comunicações com clientes, aprovações e ações que requerem um histórico auditável. É onde vemos o que aconteceu nos últimos atendimentos e direcionamos internamente para outras áreas quando necessário.</p>
+            </section>
+
+            <section id="o-que-solicitar">
+                <h2>O que solicitar via Zendesk?</h2>
+                <div class="card-container">
+                    <div class="card"><h4>⚙️ Atendimento Técnico</h4><p>Dúvidas gerais sobre a plataforma, relatar erros, solicitar qualquer tipo de apoio de usabilidade, sugestões de melhorias.</p></div>
+                    <div class="card"><h4>📄 Atendimento Financeiro</h4><p>Solicitação de faturas e notas fiscais, prorrogação de data de vencimento, alteração de dados cadastrais, renegociação de dívidas e contratos, cancelamentos, aditivos, descontos e isenções.</p></div>
+                    <div class="card"><h4>⚖️ Atendimento Ouvidoria</h4><p>Reclamações, solicitações não resolvidas que precisam ser escaladas, notificações extrajudiciais.</p></div>
+                </div>
+            </section>
+
+            <section id="canais-oficiais">
+                <h2>Canais Oficiais de Atendimento</h2>
+                <p>Recomende sempre que os clientes utilizem os canais oficiais para garantir agilidade e o cumprimento do SLA.</p>
+                <div class="card-container">
+                    <div class="card"><h4>Atendimento Técnico</h4><ol><li>Acessando a Base de conhecimento.</li><li>No Admin, clicando em “Abrir uma Solicitação”.</li><li>Pelo telefone ou WhatsApp.</li></ol></div>
+                    <div class="card"><h4>Atendimento Financeiro</h4><p>Enviando e-mail para: <b>financeiro.commerce@wake.tech</b></p></div>
+                    <div class="card"><h4>Atendimento Ouvidoria</h4><p>Enviando e-mail para: <b>ouvidoria@wake.tech</b></p></div>
+                </div>
+            </section>
+
+            <section id="ticket-manual">
+                <h2>Abrindo um Ticket Manualmente</h2>
+                <h3>Posso abrir um ticket direto no Zendesk?</h3>
+                <p><b>Sim, mas com atenção!</b> Ao registrar um ticket manualmente, é fundamental preencher tudo corretamente para não afetar o SLA. O uso correto do Zendesk é crucial para a integridade dos nossos SLAs e a organização dos processos.</p>
+                <div class="card" style="margin-top: 20px;">
+                    <h3 id="checklist-ticket">Checklist para o Ticket Perfeito</h3>
+                    <ul class="checklist" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <li><b>Marca:</b> Preencha com a opção "Wake Commerce".</li>
+                        <li><b>Solicitante:</b> Insira o e-mail do cliente.</li>
+                        <li><b>Atribuído:</b> Direcione sempre ao <b>GRUPO</b>, evite direcionar ao analista.</li>
+                        <li><b>Seguidor:</b> Adicione e-mails em cópia, se necessário.</li>
+                        <li><b>Formulário:</b> Escolha o formulário referente ao grupo atribuído.</li>
+                        <li><b>Campos Obrigatórios:</b> Preencha todos antes de enviar.</li>
+                        <li style="grid-column: 1 / -1;"><b>Status do Ticket:</b> O ticket deve ser enviado como <b>NOVO</b>.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="comunicacao-ticket">
+                <h3>Comunicação no Ticket</h3>
+                <div class="split-view">
+                    <div class="card"><h4>💬 Resposta Pública</h4><p>É o campo para conversar com o cliente. A resposta fica visível para todos que estão como destinatários do ticket.</p></div>
+                    <div class="card"><h4>👁️ Observação Interna</h4><p>O comentário fica visível apenas para os analistas internos. O cliente não tem acesso. Use para alinhar com outros times e deixar um histórico de ações.</p></div>
+                </div>
+            </section>
+
+            <section id="grupos-filas">
+                <h2>Guia de Grupos e Filas</h2>
+                <div class="card-container">
+                    <div class="card"><h4>Tech / Plataforma / Marketplaces</h4><p><b>Formulário:</b> Padrão<br><b>Descrição:</b> Atendimentos técnicos gerais.</p></div>
+                    <div class="card"><h4>Onboarding</h4><p><b>Formulário:</b> Padrão<br><b>Descrição:</b> Exclusivo para lojas em implantação.</p></div>
+                    <div class="card"><h4>Financeiro / Contratos</h4><p><b>Formulário:</b> Contratos<br><b>Descrição:</b> Nível 1 para dúvidas financeiras.</p></div>
+                    <div class="card"><h4>OTC / Produto</h4><p><b>Formulário:</b> Específico<br><b>Descrição:</b> Nível 2, recebem demandas escaladas.</p></div>
+                </div>
+            </section>
+            
+            <section id="status-tickets">
+                <h2>Ciclo de Vida do Ticket: Status</h2>
+                <div class="status-timeline">
+                    <div class="status-item novo"><div class="status-icon">N</div><h4>Novo</h4><p>Fila de triagem, SLA menor.</p></div>
+                    <div class="status-item"><div class="status-icon">A</div><h4>Aberto</h4><p>Aguardando ação do agente.</p></div>
+                    <div class="status-item"><div class="status-icon">P</div><h4>Pendente</h4><p>Aguardando retorno do cliente.</p></div>
+                    <div class="status-item"><div class="status-icon">E</div><h4>Em Espera</h4><p>Aguardando outros times.</p></div>
+                    <div class="status-item"><div class="status-icon">R</div><h4>Resolvido</h4><p>Encerrado e com pesquisa.</p></div>
+                </div>
+            </section>
+
+            <section id="papel-slack">
+                <h2>O Papel do Slack</h2>
+                <h3>Ferramenta de Alinhamento e Urgência</h3>
+                <p>O Slack apoia o processo, mas não o substitui. Deve ser utilizado para comunicação interna rápida e para dar visibilidade.</p>
+                <div class="card"><ul class="checklist">
+                    <li>Dar ciência a uma equipe sobre um ticket importante (Ex: "Churn sensível no ticket [link]").</li>
+                    <li>Tirar dúvidas rápidas, sempre compartilhando o link do ticket.</li>
+                    <li>Sinalizar urgência ou que um SLA está próximo de estourar.</li>
+                    <li>Alinhar uma resposta complexa entre múltiplos times antes de publicá-la no ticket.</li>
+                </ul></div>
+            </section>
+
+            <section id="regra-threads">
+                <h3>A Regra de Ouro do Slack: Use Threads!</h3>
+                <div class="split-view">
+                    <div class="card"><h4>Como Fazer</h4><ol>
+                        <li>Crie a thread com o assunto como título (inclua o nº do ticket).</li>
+                        <li>Em resposta, insira a tratativa ou questionamento.</li>
+                        <li>Mantenha as interações dentro da mesma thread.</li>
+                    </ol></div>
+                    <div class="card" style="background-color: #fdeeee;"><h4>Lembrete Importante</h4><p>As threads são tratadas sempre por assunto. Se precisar tratar um segundo ponto, abra uma <b>nova thread</b>.</p></div>
+                </div>
+            </section>
+            
+            <section id="processos-chave-titulo"><h2>Aplicação nos Processos-Chave</h2></section>
+            <section id="processo-prorrogacao">
+                <h3>📄 Prorrogação de Faturas</h3>
+                <p><b>Canal de Entrada:</b> financeiro.commerce@wake.tech</p>
+                <div class="split-view">
+                    <div><h4>Papel do Zendesk</h4><p>100% da tratativa é feita no Zendesk. O ticket é analisado pelo time de Financeiro / Contratos e, se necessário, encaminhado para o OTC.</p></div>
+                    <div><h4>Papel do Slack</h4><p>Usado apenas para dar maior visibilidade ou solicitar prioridade em casos críticos, sempre informando o número do ticket.</p></div>
+                </div>
+            </section>
+            <section id="processo-cancelamento">
+                <h3>❌ Solicitação de Cancelamento</h3>
+                <p><b>Canal de Entrada:</b> contratos@wake.tech</p>
+                <div class="split-view">
+                    <div><h4>Papel do Zendesk</h4><p>Tratativa principal. Análise, informação de prazos e condições para o cliente.</p></div>
+                    <div><h4>Papel do Slack</h4><p>Possui um gatilho específico: notificar o CS no canal <b>#wake-cscomm-churn</b> para iniciar a retenção.</p></div>
+                </div>
+            </section>
+            <section id="processo-notificacao">
+                <h3>⚖️ Notificação Extrajudicial</h3>
+                <p><b>Canal de Entrada:</b> ouvidoria@wake.tech</p>
+                <div class="split-view">
+                    <div><h4>Papel do Zendesk</h4><p>Canal oficial de recebimento e de envio da resposta final ao cliente.</p></div>
+                    <div><h4>Outras Ferramentas</h4><p>A tratativa interna é formalizada no <b>Benner</b> para o time Jurídico.</p></div>
+                </div>
+            </section>
+
+            <section id="start-quiz-section">
+                <h2>Teste seus Conhecimentos</h2>
+                <p>Você revisou todo o manual. Agora é hora de começar a sua jornada e conquistar o título de Especialista Wake!</p>
+                <button id="start-quiz-btn" class="btn" style="max-width: 400px; margin: 20px auto 0 auto;">Iniciar Jornada do Especialista</button>
+            </section>
+        </main>
+    </div>
+
+    <!-- VISÃO DO QUIZ -->
+    <div id="quiz-view" class="view">
+        <div class="quiz-container">
+            <div id="start-screen" class="screen active">
+                <h1 style="color:var(--wake-purple)">Jornada do</h1><h1>Especialista Wake</h1>
+                <p>Teste seus conhecimentos sobre as boas práticas de Zendesk & Slack e conquiste seu título!</p>
+                <button id="start-btn" class="btn">Iniciar Jornada</button>
+            </div>
+            <div id="quiz-screen" class="screen">
+                <div id="progress-bar-full"><div id="progress-bar-current"></div></div>
+                <p id="question-counter"></p><h2 id="question-text"></h2>
+                <ul id="answer-options" class="answer-options"></ul>
+                <div id="feedback">
+                    <h3 id="feedback-title"></h3><p id="feedback-text"></p>
+                </div>
+                <button id="next-btn" class="btn" style="display: none;">Próximo</button>
+            </div>
+            <div id="results-screen" class="screen">
+                <h1>Jornada Concluída!</h1><h2 id="results-title"></h2>
+                <p id="score-text"></p>
+                <div id="badges-container">
+                    <h3>🏆 Conquistas Desbloqueadas:</h3>
+                    <div id="badges-list" class="badges-list"></div>
+                </div>
+                <button id="restart-btn" class="btn">Tentar Novamente</button>
+                <a href="#" id="review-manual-btn" class="btn btn-secondary">Revisar o Manual</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de troca de visão (Manual <-> Quiz)
+        const manualView = document.getElementById('manual-view');
+        const quizView = document.getElementById('quiz-view');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const reviewManualBtn = document.getElementById('review-manual-btn');
+
+        startQuizBtn.addEventListener('click', () => {
+            manualView.classList.remove('active');
+            quizView.classList.add('active');
+            document.body.classList.add('quiz-active');
+            // A função startQuiz() do quiz será chamada pelo botão #start-btn de dentro do quiz
+        });
+
+        reviewManualBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.reload();
+        });
+
+
+        // --- Lógica do Quiz ---
+        const quizData = [
+            { phase: 1, question: "Um cliente solicita formalmente o cancelamento do contrato. Qual é a 'Fonte da Verdade' para registrar e conduzir este processo?", answers: [{ text: "Slack", correct: false }, { text: "E-mail pessoal", correct: false }, { text: "Zendesk", correct: true }, { text: "Benner", correct: false }], explanation: "O Zendesk é sempre nossa 'Fonte da Verdade' para qualquer solicitação formal, garantindo um histórico auditável.", badge: "Guardião da Verdade" },
+            { phase: 2, question: "Para garantir que um novo ticket seja atendido com o SLA mais rápido, você deve criá-lo com o status...", answers: [{ text: "Aberto", correct: false }, { text: "Pendente", correct: false }, { text: "Em Espera", correct: false }, { text: "Novo", correct: true }], explanation: "Tickets com status 'Novo' entram na fila de triagem inicial, que possui o SLA de atendimento mais curto. Este é um ponto CRÍTICO!", badge: "Guardião do SLA" },
+            { phase: 2, question: "Ao criar um ticket manualmente, para quem você deve atribuir a responsabilidade inicial?", answers: [{ text: "Para um analista específico que você conhece.", correct: false }, { text: "Para o GRUPO correto (Ex: Financeiro / Contratos).", correct: true }, { text: "Para você mesmo.", correct: false }, { text: "Deixar sem atribuição.", correct: false }], explanation: "Atribuir ao GRUPO garante que o ticket entre na fila correta e seja pego pelo próximo analista disponível, agilizando o atendimento.", badge: "Mestre do Ticket" },
+            { phase: 3, question: "Você precisa de um alinhamento rápido com o time jurídico sobre o ticket #12345. Qual a forma CORRETA de agir no Slack?", answers: [{ text: "Mandar uma mensagem no canal principal pedindo ajuda.", correct: false }, { text: "Criar uma thread com o título 'Dúvida Jurídica - Ticket #12345' e marcar os responsáveis.", correct: true }, { text: "Abrir uma thread com o título 'AJUDA URGENTE JURÍDICO!!!'.", correct: false }, { text: "Mandar mensagem privada para um advogado.", correct: false }], explanation: "Usar threads com títulos claros (incluindo o nº do ticket) mantém a organização e o contexto, facilitando a colaboração.", badge: "Rei da Thread" },
+            { phase: 3, question: "É correto aprovar a prorrogação de uma fatura de alto valor através de uma mensagem no Slack?", answers: [{ text: "Sim, se a diretoria estiver no canal.", correct: false }, { text: "Não, o Slack é para alinhamento. A aprovação formal deve ser registrada no Zendesk.", correct: true }], explanation: "O Slack apoia, mas não substitui. Decisões e aprovações formais devem SEMPRE ser documentadas no Zendesk para fins de auditoria.", badge: "Ninja da Comunicação" },
+            { phase: 4, question: "Cenário: Um pedido de cancelamento chega via ticket. Qual é a ação que envolve o Slack neste processo?", answers: [{ text: "Comunicar a decisão final ao cliente pelo Slack.", correct: false }, { text: "Notificar o CS da loja no canal #wake-cscomm-churn para iniciar a retenção.", correct: true }, { text: "Pedir aprovação do cancelamento no Slack.", correct: false }, { text: "Não há interação com o Slack neste processo.", correct: false }], explanation: "O processo de cancelamento tem um gatilho específico no Slack para dar ciência ao CS da loja e iniciar a estratégia de retenção rapidamente.", badge: "Estrategista de Retenção" },
+            { phase: 4, question: "Cenário: Um cliente envia uma notificação extrajudicial para o e-mail do financeiro. O que você faz?", answers: [{ text: "Responde diretamente ao cliente para agilizar.", correct: false }, { text: "Ignora, pois veio pelo canal errado.", correct: false }, { text: "Orienta o cliente a enviar para o canal correto (ouvidoria@wake.tech) e encaminha o ticket para a fila da Ouvidoria.", correct: true }], explanation: "Centralizar as solicitações nos canais corretos é fundamental. O time de Ouvidoria é o ponto de entrada para notificações e acionará o Jurídico corretamente.", badge: "Defensor dos Processos" }
+        ];
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress-bar-current');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answerOptions = document.getElementById('answer-options');
+        const feedback = document.getElementById('feedback');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackText = document.getElementById('feedback-text');
+        const resultsTitle = document.getElementById('results-title');
+        const scoreText = document.getElementById('score-text');
+        const badgesList = document.getElementById('badges-list');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let unlockedBadges = new Set();
+
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', showNextQuestion);
+        restartBtn.addEventListener('click', startQuiz);
+        answerOptions.addEventListener('click', selectAnswer);
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            unlockedBadges.clear();
+            startScreen.classList.remove('active');
+            resultsScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const question = quizData[currentQuestionIndex];
+            const questionNumber = currentQuestionIndex + 1;
+            progressBar.style.width = `${(questionNumber / quizData.length) * 100}%`;
+            questionCounter.innerText = `Fase ${question.phase} - Pergunta ${questionNumber} de ${quizData.length}`;
+            questionText.innerText = question.question;
+            question.answers.forEach(answer => {
+                const li = document.createElement('li');
+                li.innerText = answer.text;
+                li.dataset.correct = answer.correct;
+                answerOptions.appendChild(li);
+            });
+        }
+        
+        function resetState() {
+            while (answerOptions.firstChild) { answerOptions.removeChild(answerOptions.firstChild); }
+            feedback.style.display = 'none';
+            nextBtn.style.display = 'none';
+        }
+
+        function selectAnswer(e) {
+            if (e.target.tagName !== 'LI') return;
+            const selectedLi = e.target;
+            const isCorrect = selectedLi.dataset.correct === 'true';
+            const question = quizData[currentQuestionIndex];
+            if (isCorrect) {
+                score++;
+                if (question.badge) { unlockedBadges.add(question.badge); }
+                feedbackTitle.innerText = 'Correto!';
+                feedbackTitle.style.color = 'var(--success-green)';
+            } else {
+                feedbackTitle.innerText = 'Incorreto!';
+                feedbackTitle.style.color = 'var(--danger-red)';
+            }
+            feedbackText.innerText = question.explanation;
+            feedback.style.display = 'block';
+            Array.from(answerOptions.children).forEach(li => {
+                li.classList.add('disabled');
+                if (li.dataset.correct === 'true') { li.classList.add('correct'); }
+            });
+            nextBtn.style.display = 'block';
+        }
+
+        function showNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) { showQuestion(); } else { showResults(); }
+        }
+
+        function showResults() {
+            quizScreen.classList.remove('active');
+            resultsScreen.classList.add('active');
+            const scorePercent = Math.round((score / quizData.length) * 100);
+            scoreText.innerText = `Sua pontuação final foi: ${score} de ${quizData.length} (${scorePercent}%)`;
+            if (scorePercent >= 90) { resultsTitle.innerText = "🏆 Especialista Wake"; }
+            else if (scorePercent >= 70) { resultsTitle.innerText = "🥈 Profissional Wake"; }
+            else if (scorePercent >= 50) { resultsTitle.innerText = "🥉 Praticante Wake"; }
+            else { resultsTitle.innerText = "🧗 Iniciante da Jornada"; }
+            badgesList.innerHTML = '';
+            if (unlockedBadges.size > 0) {
+                unlockedBadges.forEach(badge => {
+                    const badgeEl = document.createElement('div');
+                    badgeEl.classList.add('badge');
+                    badgeEl.innerText = badge;
+                    badgesList.appendChild(badgeEl);
+                });
+            } else {
+                badgesList.innerHTML = `<p style="color: #888; font-size: 16px;">Nenhuma conquista desbloqueada. Revise o material e tente novamente!</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
